@@ -184,9 +184,7 @@
   </style>
 </head>
 <body>
-
-  <h1>📺 GrandmaRemote</h1>
-
+  
   <main class="remote" aria-label="TV Remote Control">
 
     <!-- ── Status bar ──────────────────────────────────────── -->
@@ -200,7 +198,6 @@
 
     <!-- ── Section 1 : Favorite Channels ──────────────────── -->
     <section class="section" aria-labelledby="lbl-channels">
-      <div class="section-label" id="lbl-channels">Favorite Channels</div>
       <div class="grid-3" role="group" aria-labelledby="lbl-channels">
         <button class="btn btn-channel" onclick="selectChannel('TCM')">TCM</button>
         <button class="btn btn-channel" onclick="selectChannel('FOX')">FOX</button>
@@ -216,7 +213,6 @@
 
     <!-- ── Section 2 : Function Shortcuts ─────────────────── -->
     <section class="section" aria-labelledby="lbl-functions">
-      <div class="section-label" id="lbl-functions">Functions</div>
       <div class="grid-3" role="group" aria-labelledby="lbl-functions">
         <button class="btn btn-fn" onclick="setRoom('Livingroom')">Livingroom</button>
         <button class="btn btn-fn" onclick="setRoom('Den')">Den</button>
@@ -232,7 +228,6 @@
 
     <!-- ── Section 3 : Navigation ──────────────────────────── -->
     <section class="section" aria-labelledby="lbl-nav">
-      <div class="section-label" id="lbl-nav">Navigation</div>
       <div
         class="nav-grid"
         role="group"
@@ -255,8 +250,6 @@
 
     <!-- ── Section 4 : Number Pad ──────────────────────────── -->
     <section class="section" aria-labelledby="lbl-numpad">
-      <div class="section-label" id="lbl-numpad">Enter Channel Number</div>
-
       <div class="grid-3" role="group" aria-labelledby="lbl-numpad">
         <button class="btn btn-num" onclick="numPress('1')">1</button>
         <button class="btn btn-num" onclick="numPress('2')">2</button>
