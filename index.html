@@ -112,6 +112,7 @@
 
     /* ── Function buttons ─────────────────────────────────────── */
     .btn-fn { background: #4a148c; border-color: #6a1b9a; }
+    .btn-room { background: #aa148c; border-color: #6a1b9a; }
     .btn-fn:hover { background: #6a1b9a; }
     .btn-fn:active { background: #38006b; }
 
@@ -228,9 +229,9 @@
     <!-- ── Section 2 : Function Shortcuts ─────────────────── -->
     <section class="section" aria-labelledby="lbl-functions">
       <div class="grid-3" role="group" aria-labelledby="lbl-functions">
-        <button class="btn btn-fn btn-fn-selected" id="room-livingroom" aria-pressed="true" onclick="setRoom('Livingroom')">Livingroom</button>
+        <button class="btn btn-room btn-fn-selected" id="room-livingroom" aria-pressed="true" onclick="setRoom('Livingroom')">Livingroom</button>
         <div aria-hidden="true"></div>
-        <button class="btn btn-fn" id="room-bedroom" aria-pressed="false" onclick="setRoom('Bedroom')">Bedroom</button>
+        <button class="btn btn-room" id="room-bedroom" aria-pressed="false" onclick="setRoom('Bedroom')">Bedroom</button>
         <button class="btn btn-fn" onclick="setSource('FIOS')">FIOS</button>
         <button class="btn btn-fn" onclick="setSource('ROKU')">ROKU</button>
         <button class="btn btn-fn" onclick="setSource('DVR')">DVR</button>
@@ -284,7 +285,7 @@
           type="text"
           id="channel-input"
           class="channel-input"
-          placeholder="_ _ _ _"
+          placeholder="_ _ _ _ _"
           readonly
           aria-label="Channel number display"
           aria-describedby="lbl-numpad"
