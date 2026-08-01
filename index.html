@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GrandmaRemote – TV Control</title>
+  <style>
+    /* ── Reset ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Page ─────────────────────────────────────────────────── */
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0d1b2a;
+      color: #e8eaf6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(12px, 2vw, 24px);
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      letter-spacing: 2px;
+      margin-bottom: clamp(12px, 2vw, 20px);
+      color: #90caf9;
+      text-align: center;
+    }
+
+    /* ── Remote card ──────────────────────────────────────────── */
+    .remote {
+      background: #162032;
+      border-radius: 20px;
+      padding: clamp(16px, 3vw, 32px);
+      width: 100%;
+      max-width: 860px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    /* ── Status bar ───────────────────────────────────────────── */
+    .status-bar {
+      background: #0a1320;
+      border-radius: 10px;
+      padding: 10px 18px;
+      margin-bottom: clamp(16px, 2.5vw, 28px);
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: #80cbc4;
+      text-align: center;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Section wrapper ──────────────────────────────────────── */
+    .section { margin-bottom: clamp(20px, 3vw, 34px); }
+
+    .section-label {
+      font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #607d8b;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e3248;
+    }
+
+    /* ── 3-column grid used by channels & functions ───────────── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(8px, 1.5vw, 14px);
+    }
+
+    /* ── Base button ──────────────────────────────────────────── */
+    .btn {
+      background: #1565c0;
+      color: #ffffff;
+      border: 2px solid #1976d2;
+      border-radius: 12px;
+      padding: clamp(14px, 2vw, 20px) 8px;
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      min-height: clamp(58px, 8vw, 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
+      /* Enough room to read on tablet */
+      line-height: 1.2;
+    }
+
+    .btn:hover  { background: #1976d2; box-shadow: 0 4px 14px rgba(25,118,210,0.45); }
+    .btn:active { background: #0d47a1; transform: scale(0.96); box-shadow: none; }
+
+    /* Keyboard focus ring – high-contrast for accessibility */
+    .btn:focus-visible {
+      outline: 3px solid #ffeb3b;
+      outline-offset: 3px;
+    }
+
+    /* ── Channel buttons ──────────────────────────────────────── */
+    .btn-channel { background: #0d47a1; border-color: #1565c0; }
+    .btn-channel:hover { background: #1565c0; }
+
+    /* ── Function buttons ─────────────────────────────────────── */
+    .btn-fn { background: #4a148c; border-color: #6a1b9a; }
+    .btn-fn:hover { background: #6a1b9a; }
+    .btn-fn:active { background: #38006b; }
+
+    .btn-exit { background: #b71c1c; border-color: #c62828; }
+    .btn-exit:hover { background: #c62828; }
+
+    /* ── Navigation d-pad ─────────────────────────────────────── */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: clamp(8px, 1.5vw, 14px);
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .btn-nav {
+      background: #37474f;
+      border-color: #546e7a;
+      font-size: clamp(1.2rem, 3vw, 1.7rem);
+    }
+    .btn-nav:hover { background: #546e7a; }
+
+    .btn-ok {
+      background: #2e7d32;
+      border-color: #388e3c;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+    }
+    .btn-ok:hover { background: #388e3c; }
+
+    .nav-empty { /* spacer cell – no button */ }
+
+    /* ── Number pad ───────────────────────────────────────────── */
+    .btn-num {
+      background: #263238;
+      border-color: #37474f;
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    }
+    .btn-num:hover { background: #37474f; }
+
+    .btn-clr {
+      background: #b71c1c;
+      border-color: #c62828;
+    }
+    .btn-clr:hover { background: #c62828; }
+
+    /* ── Channel input row ────────────────────────────────────── */
+    .input-row {
+      display: flex;
+      gap: clamp(8px, 1.5vw, 14px);
+      margin-top: clamp(10px, 1.5vw, 16px);
+    }
+
+    .channel-input {
+      flex: 1;
+      padding: clamp(12px, 1.8vw, 18px);
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+      font-weight: 700;
+      border-radius: 10px;
+      border: 2px solid #37474f;
+      background: #0a1320;
+      color: #80cbc4;
+      text-align: center;
+      letter-spacing: 4px;
+    }
+
+    .btn-go {
+      background: #1b5e20;
+      border-color: #2e7d32;
+      min-width: clamp(80px, 12vw, 120px);
+      font-size: clamp(1rem, 2vw, 1.2rem);
+    }
+    .btn-go:hover { background: #2e7d32; }
+  </style>
+</head>
+<body>
+
+  <h1>📺 GrandmaRemote</h1>
+
+  <main class="remote" aria-label="TV Remote Control">
+
+    <!-- ── Status bar ──────────────────────────────────────── -->
+    <div
+      class="status-bar"
+      id="status-bar"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >Ready</div>
+
+    <!-- ── Section 1 : Favorite Channels ──────────────────── -->
+    <section class="section" aria-labelledby="lbl-channels">
+      <div class="section-label" id="lbl-channels">Favorite Channels</div>
+      <div class="grid-3" role="group" aria-labelledby="lbl-channels">
+        <button class="btn btn-channel" onclick="selectChannel('TCM')">TCM</button>
+        <button class="btn btn-channel" onclick="selectChannel('FOX')">FOX</button>
+        <button class="btn btn-channel" onclick="selectChannel('CBS')">CBS</button>
+        <button class="btn btn-channel" onclick="selectChannel('Hallmark')">Hallmark</button>
+        <button class="btn btn-channel" onclick="selectChannel('ABC')">ABC</button>
+        <button class="btn btn-channel" onclick="selectChannel('NBC')">NBC</button>
+        <button class="btn btn-channel" onclick="selectChannel('CNN')">CNN</button>
+        <button class="btn btn-channel" onclick="selectChannel('ESPN')">ESPN</button>
+        <button class="btn btn-channel" onclick="selectChannel('HGTV')">HGTV</button>
+      </div>
+    </section>
+
+    <!-- ── Section 2 : Function Shortcuts ─────────────────── -->
+    <section class="section" aria-labelledby="lbl-functions">
+      <div class="section-label" id="lbl-functions">Functions</div>
+      <div class="grid-3" role="group" aria-labelledby="lbl-functions">
+        <button class="btn btn-fn" onclick="setRoom('Livingroom')">Livingroom</button>
+        <button class="btn btn-fn" onclick="setRoom('Den')">Den</button>
+        <button class="btn btn-fn" onclick="setRoom('Bedroom')">Bedroom</button>
+        <button class="btn btn-fn" onclick="setSource('FIOS')">FIOS</button>
+        <button class="btn btn-fn" onclick="setSource('ROKU')">ROKU</button>
+        <button class="btn btn-fn" onclick="setSource('DVR')">DVR</button>
+        <button class="btn btn-fn" onclick="pressGuide()">Guide</button>
+        <button class="btn btn-fn" onclick="pressPlayPause()">Play / Pause</button>
+        <button class="btn btn-fn btn-exit" onclick="pressExit()">Exit</button>
+      </div>
+    </section>
+
+    <!-- ── Section 3 : Navigation ──────────────────────────── -->
+    <section class="section" aria-labelledby="lbl-nav">
+      <div class="section-label" id="lbl-nav">Navigation</div>
+      <div
+        class="nav-grid"
+        role="group"
+        aria-labelledby="lbl-nav"
+        aria-label="Directional controls"
+      >
+        <div class="nav-empty" aria-hidden="true"></div>
+        <button class="btn btn-nav" onclick="navigate('up')"    aria-label="Up">▲</button>
+        <div class="nav-empty" aria-hidden="true"></div>
+
+        <button class="btn btn-nav" onclick="navigate('left')"  aria-label="Left">◀</button>
+        <button class="btn btn-nav btn-ok" onclick="navigate('ok')" aria-label="OK">OK</button>
+        <button class="btn btn-nav" onclick="navigate('right')" aria-label="Right">▶</button>
+
+        <div class="nav-empty" aria-hidden="true"></div>
+        <button class="btn btn-nav" onclick="navigate('down')"  aria-label="Down">▼</button>
+        <div class="nav-empty" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- ── Section 4 : Number Pad ──────────────────────────── -->
+    <section class="section" aria-labelledby="lbl-numpad">
+      <div class="section-label" id="lbl-numpad">Enter Channel Number</div>
+
+      <div class="grid-3" role="group" aria-labelledby="lbl-numpad">
+        <button class="btn btn-num" onclick="numPress('1')">1</button>
+        <button class="btn btn-num" onclick="numPress('2')">2</button>
+        <button class="btn btn-num" onclick="numPress('3')">3</button>
+        <button class="btn btn-num" onclick="numPress('4')">4</button>
+        <button class="btn btn-num" onclick="numPress('5')">5</button>
+        <button class="btn btn-num" onclick="numPress('6')">6</button>
+        <button class="btn btn-num" onclick="numPress('7')">7</button>
+        <button class="btn btn-num" onclick="numPress('8')">8</button>
+        <button class="btn btn-num" onclick="numPress('9')">9</button>
+        <button class="btn btn-num btn-clr" onclick="clearInput()" aria-label="Clear">CLR</button>
+        <button class="btn btn-num" onclick="numPress('0')">0</button>
+        <button class="btn btn-num" onclick="numPress('-')" aria-label="Dash / Sub-channel">–</button>
+      </div>
+
+      <div class="input-row">
+        <input
+          type="text"
+          id="channel-input"
+          class="channel-input"
+          placeholder="_ _ _ _"
+          readonly
+          aria-label="Channel number display"
+          aria-describedby="lbl-numpad"
+        />
+        <button class="btn btn-num btn-go" onclick="submitChannel()" aria-label="Go to channel">Go!</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ── Helpers ─────────────────────────────────────────────── */
+    function setStatus(msg) {
+      document.getElementById('status-bar').textContent = msg;
+    }
+
+    /* ── Section 1 stubs ─────────────────────────────────────── */
+    function selectChannel(ch) {
+      setStatus('Channel: ' + ch);
+      // TODO: send channel command to device
+    }
+
+    /* ── Section 2 stubs ─────────────────────────────────────── */
+    function setRoom(room) {
+      setStatus('Controlling: ' + room + ' TV');
+      // TODO: switch active device/room
+    }
+
+    function setSource(src) {
+      setStatus('Source: ' + src);
+      // TODO: switch input source
+    }
+
+    function pressGuide() {
+      setStatus('Guide opened');
+      // TODO: open program guide
+    }
+
+    function pressPlayPause() {
+      setStatus('Play / Pause');
+      // TODO: toggle playback
+    }
+
+    function pressExit() {
+      setStatus('Exit');
+      // TODO: send exit / back command
+    }
+
+    /* ── Section 3 stubs ─────────────────────────────────────── */
+    function navigate(dir) {
+      const labels = { up: '▲ Up', down: '▼ Down', left: '◀ Left', right: '▶ Right', ok: '✔ OK' };
+      setStatus(labels[dir] || dir);
+      // TODO: send directional command
+    }
+
+    /* ── Section 4 ────────────────────────────────────────────── */
+    function numPress(digit) {
+      var input = document.getElementById('channel-input');
+      if (input.value.length < 5) {
+        input.value += digit;
+      }
+    }
+
+    function clearInput() {
+      document.getElementById('channel-input').value = '';
+      setStatus('Channel input cleared');
+    }
+
+    function submitChannel() {
+      var ch = document.getElementById('channel-input').value.trim();
+      if (ch) {
+        setStatus('Going to channel: ' + ch);
+        document.getElementById('channel-input').value = '';
+        // TODO: send channel number to device
+      } else {
+        setStatus('Please enter a channel number first');
+      }
+    }
+  </script>
+
+</body>
+</html>
