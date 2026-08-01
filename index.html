@@ -34,7 +34,7 @@
       border-radius: 20px;
       padding: clamp(16px, 3vw, 32px);
       width: 100%;
-      max-width: 860px;
+      max-width: 1860px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     }
 
@@ -51,6 +51,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .status-bar[hidden] {
+      display: none !important;
     }
 
     /* ── Section wrapper ──────────────────────────────────────── */
@@ -110,6 +114,15 @@
     .btn-fn { background: #4a148c; border-color: #6a1b9a; }
     .btn-fn:hover { background: #6a1b9a; }
     .btn-fn:active { background: #38006b; }
+
+    .btn-fn-selected {
+      background: #80cbc4;
+      border-color: #b2dfdb;
+      color: #0a1320;
+      box-shadow: 0 0 0 3px rgba(128,203,196,0.28);
+    }
+
+    .btn-fn-selected:hover { background: #9be0da; }
 
     .btn-exit { background: #b71c1c; border-color: #c62828; }
     .btn-exit:hover { background: #c62828; }
@@ -191,6 +204,7 @@
     <div
       class="status-bar"
       id="status-bar"
+      hidden
       role="status"
       aria-live="polite"
       aria-atomic="true"
@@ -214,9 +228,9 @@
     <!-- ── Section 2 : Function Shortcuts ─────────────────── -->
     <section class="section" aria-labelledby="lbl-functions">
       <div class="grid-3" role="group" aria-labelledby="lbl-functions">
-        <button class="btn btn-fn" onclick="setRoom('Livingroom')">Livingroom</button>
-        <button class="btn btn-fn" onclick="setRoom('Den')">Den</button>
-        <button class="btn btn-fn" onclick="setRoom('Bedroom')">Bedroom</button>
+        <button class="btn btn-fn btn-fn-selected" id="room-livingroom" aria-pressed="true" onclick="setRoom('Livingroom')">Livingroom</button>
+        <div aria-hidden="true"></div>
+        <button class="btn btn-fn" id="room-bedroom" aria-pressed="false" onclick="setRoom('Bedroom')">Bedroom</button>
         <button class="btn btn-fn" onclick="setSource('FIOS')">FIOS</button>
         <button class="btn btn-fn" onclick="setSource('ROKU')">ROKU</button>
         <button class="btn btn-fn" onclick="setSource('DVR')">DVR</button>
@@ -262,7 +276,7 @@
         <button class="btn btn-num" onclick="numPress('9')">9</button>
         <button class="btn btn-num btn-clr" onclick="clearInput()" aria-label="Clear">CLR</button>
         <button class="btn btn-num" onclick="numPress('0')">0</button>
-        <button class="btn btn-num btn-clr" onclick="numPress('-')" aria-label="Dash / Sub-channel">DEL</button>
+        <button class="btn btn-num btn-clr" onclick="deleteLastChar()" aria-label="Delete last character">DEL</button>
       </div>
 
       <div class="input-row">
@@ -282,10 +296,22 @@
   </main>
 
   <script>
+    const STATUS_BAR_URL_SLUG = '/show-status';
+
     /* ── Helpers ─────────────────────────────────────────────── */
+    function syncStatusBarVisibility() {
+      var statusBar = document.getElementById('status-bar');
+      var currentUrl = window.location.href.toLowerCase();
+      var expectedSlug = STATUS_BAR_URL_SLUG.toLowerCase();
+
+      statusBar.hidden = !currentUrl.includes(expectedSlug);
+    }
+
     function setStatus(msg) {
       document.getElementById('status-bar').textContent = msg;
     }
+
+    syncStatusBarVisibility();
 
     /* ── Section 1 stubs ─────────────────────────────────────── */
     function selectChannel(ch) {
@@ -295,6 +321,17 @@
 
     /* ── Section 2 stubs ─────────────────────────────────────── */
     function setRoom(room) {
+      var roomButtons = {
+        Livingroom: document.getElementById('room-livingroom'),
+        Bedroom: document.getElementById('room-bedroom')
+      };
+
+      Object.keys(roomButtons).forEach(function(name) {
+        var isSelected = name === room;
+        roomButtons[name].classList.toggle('btn-fn-selected', isSelected);
+        roomButtons[name].setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      });
+
       setStatus('Controlling: ' + room + ' TV');
       // TODO: switch active device/room
     }
@@ -337,6 +374,11 @@
     function clearInput() {
       document.getElementById('channel-input').value = '';
       setStatus('Channel input cleared');
+    }
+
+    function deleteLastChar() {
+      var input = document.getElementById('channel-input');
+      input.value = input.value.slice(0, -1);
     }
 
     function submitChannel() {
